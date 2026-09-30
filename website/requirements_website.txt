@@ -1,0 +1,10 @@
+Flask==3.1.0
+pandas==2.2.2
+numpy==1.26.4
+opendp==0.9.0
+matplotlib==3.9.1.post1
+seaborn==0.13.2
+scikit-learn==1.5.1
+pyproj==3.7.0
+scipy==1.14.0
+gunicorn==23.0.0

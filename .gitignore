@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+.ipynb_checkpoints/
+# The research data belongs to its provider and is not published.
+data/
+website/data/

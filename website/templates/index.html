@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ texts['h1'] }}</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', Arial, sans-serif; background: #f7f7fa; margin: 0; padding: 0; color: #222; }
+        h1 { background: #3778c2; color: white; margin: 0; padding: 24px 0; text-align: center; font-weight: 700; letter-spacing: 1px; }
+        h2 { color: #3778c2; margin-top: 32px; }
+        form { background: #fff; max-width: 700px; margin: 32px auto; padding: 32px 32px 24px 32px; border-radius: 12px; box-shadow: 0 2px 16px rgba(50, 50, 93, 0.1); }
+        label { font-weight: 500; display: block; margin: 20px 0 4px 0; }
+        input[type="file"], select, input[type="range"], input[type="checkbox"], input[type="submit"], input[type="number"] { margin-bottom: 12px; }
+        select, input[type="range"], input[type="number"] { padding: 6px 8px; border-radius: 6px; border: 1px solid #ccd3db; background: #f8fafd; font-size: 1rem; }
+        input[type="range"] { width: 60%; margin: 0 0 8px 0; }
+        input[type="number"] { width: 70px; margin-left: 8px; }
+        input[type="checkbox"] { margin-left: 6px; transform: scale(1.2); }
+        input[type="submit"] { background: #3778c2; border: none; color: white; font-weight: 700; padding: 12px 28px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 18px; transition: background 0.2s; }
+        input[type="submit"]:hover { background: #285a8c; }
+        .data { border-collapse: collapse; width: 100%; margin-top: 12px; background: white; }
+        .data th, .data td { border: 1px solid #e1e4ea; padding: 6px 10px; }
+        .data th { background-color: #f0f5fa; }
+        .data td { text-align: right; }
+        .centered-flex { display: flex; justify-content: center; gap: 28px; align-items: flex-start; margin: 0 auto 32px auto; width: 80vw; max-width: 1200px; }
+        .table-container { flex: 1 1 0; min-width: 0; max-width: 470px; width: 470px; border-collapse: collapse; background: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(60,60,100,0.05); padding: 12px; overflow-x: auto; }
+        .flash-error { background: #fff0f0; color: #b70000; border: 1px solid #b70000; padding: 14px; border-radius: 8px; margin: 22px auto; max-width: 700px; font-weight: 600; text-align: center; }
+        .method-explanation-modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); }
+        .method-explanation-content { background: #fff; border-radius: 12px; padding: 28px 28px 18px 28px; max-width: 420px; margin: 10vh auto 0 auto; box-shadow: 0 8px 32px #0002; position: relative; }
+        .method-explanation-content h3 { color: #3778c2; margin-top: 0; }
+        .method-explanation-content button { position: absolute; right: 16px; top: 12px; border: none; background: none; font-size: 1.3em; color: #888; cursor: pointer; }
+        .plot-tab-btn { border: 1px solid #3778c2; background: #f8fafd; color: #3778c2; font-weight: 600; font-size: 1rem; padding: 8px 24px; cursor: pointer; outline: none; transition: background 0.2s, color 0.2s; }
+        .plot-tab-btn:active, .plot-tab-btn:focus { background: #3778c2; color: #fff; }
+        .epsilon-acumulado { background:#f0f7ff; color:#222; border:1px solid #3778c2; border-radius:8px; padding:10px 18px; max-width:700px; margin:22px auto 0 auto; text-align:center; font-size:1.1em; }
+        .lang-switch-btn { position: fixed; top: 20px; right: 30px; z-index: 9999; background: #3778c2; color: #fff; padding: 10px 22px; border-radius: 22px; font-weight:bold; font-size:1.05em; box-shadow: 0 2px 8px #0002; text-decoration: none; border: 2px solid #3778c2; transition: background .2s, color .2s; }
+        .lang-switch-btn:hover { background:#285a8c; color:white; }
+        @media (max-width: 1000px) { .centered-flex { flex-direction: column; width: 96vw; } .table-container { width: 100%; max-width: 100vw; } }
+        @media (max-width: 700px) { form { padding: 18px 6vw; max-width: 98vw; } }
+        a { display: inline-block; margin-top: 12px; background: #3778c2; color: white; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; transition: background 0.2s; }
+        a:hover { background: #285a8c; }
+    </style>
+    <script>
+        var explanations = {{ method_explanations_json|safe }};
+        function showMethodExplanation() {
+            var method = document.getElementById('method-select').value;
+            var content = explanations[method] || '';
+            var names = {
+                'random_aggregation': '{{ texts["random_aggregation"] }}',
+                'distance_aggregation': '{{ texts["distance_aggregation"] }}',
+                'differential_privacy': '{{ texts["differential_privacy"] }}',
+                'differential_privacy_random': '{{ texts["differential_privacy_random"] }}'
+            };
+            document.getElementById('method-explanation-title').innerText = names[method] || method;
+            document.getElementById('method-explanation-text').innerText = content;
+            document.getElementById('method-explanation-modal').style.display = 'block';
+        }
+        function hideMethodExplanation() {
+            document.getElementById('method-explanation-modal').style.display = 'none';
+        }
+        function toggleSliders() {
+            const method = document.querySelector('select[name="method"]').value;
+            document.getElementById('random-slider').style.display = (method === 'random_aggregation') ? 'block' : 'none';
+            document.getElementById('distance-slider').style.display = (method === 'distance_aggregation') ? 'block' : 'none';
+            document.getElementById('dp-options').style.display = (method === 'differential_privacy') ? 'block' : 'none';
+            document.getElementById('dp-random-options').style.display = (method === 'differential_privacy_random') ? 'block' : 'none';
+        }
+        function toggleClampingOptions(dpId) {
+            var checked = document.getElementById('clamping_' + dpId).checked;
+            document.getElementById('clamping-options-' + dpId).style.display = checked ? 'block' : 'none';
+            var mode = document.querySelector('input[name="clamping_mode_' + dpId + '"]:checked');
+            toggleManualClamping(dpId, mode ? mode.value : 'boxplot');
+        }
+        function toggleManualClamping(dpId, mode) {
+            var manual = document.getElementById('clamping-options-manual-' + dpId);
+            if (mode === "manual") {
+                manual.style.display = 'block';
+            } else {
+                manual.style.display = 'none';
+            }
+        }
+        function updateGroupSize(value, mode) {
+            document.getElementById('group_size_' + mode).value = value;
+            document.getElementById('group_size_input_' + mode).value = value;
+        }
+        function updateDistanceThreshold(value) {
+            document.getElementById('distance_threshold').value = value;
+            document.getElementById('distance_threshold_input').value = value;
+            document.getElementById('distance_thresh_val').innerText = parseFloat(value).toFixed(4);
+        }
+        function updateEpsilonValue(logValue, mode) {
+            const epsilon = Math.pow(10, logValue);
+            document.getElementById('epsilon_' + mode).value = epsilon;
+            document.getElementById('epsilon_slider_' + mode).value = logValue;
+            document.getElementById('epsilon_input_' + mode).value = epsilon.toPrecision(3);
+        }
+        function onEpsilonNumberInput(val, mode) {
+            if(val <= 0) return;
+            let logVal = Math.log10(val);
+            document.getElementById('epsilon_slider_' + mode).value = logVal;
+            updateEpsilonValue(logVal, mode);
+        }
+        function showPlot(which, prefix) {
+            prefix = prefix || "";
+            ['orig','anon','both','noise'].forEach(function(x) {
+                var e = document.getElementById(prefix+'plot-'+x);
+                if (e) e.style.display = (x === which) ? 'block' : 'none';
+                var btn = document.getElementById(prefix+'tab-'+x);
+                if (btn) btn.style.background = (x === which) ? '#3778c2' : '#f8fafd';
+                if (btn) btn.style.color = (x === which) ? 'white' : '#3778c2';
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleSliders();
+            toggleClampingOptions('dp');
+            toggleClampingOptions('dprand');
+            showPlot('both');
+            var forms = document.querySelectorAll('form');
+            forms.forEach(function(form) {
+                form.addEventListener('submit', function() {
+                    localStorage.setItem('scrollY', window.scrollY);
+                });
+            });
+            var y = localStorage.getItem('scrollY');
+            if (y !== null) {
+                window.scrollTo(0, parseInt(y));
+                localStorage.removeItem('scrollY');
+            }
+        });
+    </script>
+</head>
+<body>
+    <a href="{{ url_for('setlang', lang='en' if lang == 'pt' else 'pt') }}"
+    style="position: fixed; top: 20px; right: 30px; z-index: 9999;
+            background: #3778c2; color: #fff; padding: 10px 22px;
+            border-radius: 22px; font-weight:bold; font-size:1.05em;
+            box-shadow: 0 2px 8px #0002; text-decoration: none; border: 2px solid #3778c2; transition: background .2s, color .2s;">
+        {{ texts['lang_switch'] }}
+    </a>
+
+    <h1>{{ texts['h1'] }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-error">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% if epsilon_sum and epsilon_sum > 0 %}
+    <div class="epsilon-acumulado">
+        <b>{{ texts['epsilon_sum'] }}</b> {{ '%.4g' % epsilon_sum }}<br>
+        <span style="font-size:0.9em;">
+            {{ texts['epsilon_sum_tip'] }}
+        </span>
+    </div>
+    {% endif %}
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <input type="submit" value="{{ texts['upload'] }}">
+    </form>
+    {% if input_table %}
+    <div class="centered-flex">
+        <div class="table-container">
+            <b>{{ texts['preview_orig'] }}</b>
+            {{ input_table|safe }}
+        </div>
+        <div class="table-container">
+            <b>{{ texts['stats_orig'] }}</b>
+            {% if input_describe %}{{ input_describe|safe }}{% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% if columns %}
+    <form action="/process" method="post">
+        <h2>{{ texts['select_column'] }}</h2>
+        <select name="column">
+            {% for column in columns %}
+            <option value="{{ column }}" {% if column == selected_column %}selected{% endif %}>{{ column }}</option>
+            {% endfor %}
+        </select>
+        <h2>
+            {{ texts['select_method'] }}
+            <button type="button" onclick="showMethodExplanation()" style="background: #e6effc; border: none; border-radius: 50%; width: 24px; height: 24px; font-weight: bold; color: #3778c2; cursor: pointer; margin-left: 6px; font-size: 1.1em;" title="{{ texts['method_explanation_title'] }}">?</button>
+        </h2>
+        <select name="method" id="method-select" onchange="toggleSliders()">
+            <option value="random_aggregation" {% if selected_method == "random_aggregation" %}selected{% endif %}>{{ texts['random_aggregation'] }}</option>
+            <option value="distance_aggregation" {% if selected_method == "distance_aggregation" %}selected{% endif %}>{{ texts['distance_aggregation'] }}</option>
+            <option value="differential_privacy" {% if selected_method == "differential_privacy" %}selected{% endif %}>{{ texts['differential_privacy'] }}</option>
+            <option value="differential_privacy_random" {% if selected_method == "differential_privacy_random" %}selected{% endif %}>{{ texts['differential_privacy_random'] }}</option>
+        </select>
+        <div id="random-slider" style="display:none;">
+            <label for="group_size_random">{{ texts['group_size'] }}</label>
+            <input type="range" id="group_size_random" name="group_size_random" min="2" max="{{ dataset_length }}" value="{{ group_size_random }}" oninput="updateGroupSize(this.value, 'random')">
+            <input type="number" id="group_size_input_random" min="2" max="{{ dataset_length }}" value="{{ group_size_random }}" oninput="updateGroupSize(this.value, 'random')">
+        </div>
+        <div id="distance-slider" style="display:none;">
+            <label for="distance_threshold">{{ texts['distance_slider'] }}</label>
+            <input type="range" id="distance_threshold" name="distance_threshold"
+                min="{{ distance_min if distance_min is not none else 0 }}"
+                max="{{ distance_max if distance_max is not none else 1 }}"
+                step="any"
+                value="{{ distance_threshold }}"
+                oninput="updateDistanceThreshold(this.value);">
+            <input type="number" id="distance_threshold_input"
+                min="{{ distance_min if distance_min is not none else 0 }}"
+                max="{{ distance_max if distance_max is not none else 1 }}"
+                step="any"
+                value="{{ distance_threshold }}"
+                oninput="updateDistanceThreshold(this.value);">
+            {% if distance_min is not none and distance_max is not none %}
+            <div style="font-size:0.95em; color:#333; margin-top:3px;">
+                {{ texts['distance_min_max'].format(min="%.2f" % distance_min, max="%.2f" % distance_max) }}
+            </div>
+            {% endif %}
+        </div>
+        <div id="dp-options" style="display:none;">
+            <label for="epsilon_slider_dp">{{ texts['epsilon_val'] }}</label>
+            <input type="range" id="epsilon_slider_dp" min="-3" max="2" step="0.01"
+                value="{% if epsilon_dp is not none %}{{ epsilon_dp|log(10) }}{% else %}-3{% endif %}"
+                oninput="updateEpsilonValue(this.value, 'dp')">
+            <input type="number" id="epsilon_input_dp" min="0.001" max="100" step="any"
+                value="{% if epsilon_dp is not none %}{{ '%.3g' % epsilon_dp }}{% else %}0.001{% endif %}"
+                oninput="onEpsilonNumberInput(this.value, 'dp')">
+            <input type="hidden" id="epsilon_dp" name="epsilon_dp" value="{{ epsilon_dp }}">
+            <br>
+            <label for="clamping_dp">{{ texts['use_clamping'] }}</label>
+            <input type="checkbox" id="clamping_dp" name="clamping_dp" {{ clamping_dp }} onchange="toggleClampingOptions('dp')">
+            <div id="clamping-options-dp" style="display:none; margin:8px 0 0 0; padding-left:10px;">
+                <label>
+                    <input type="radio" name="clamping_mode_dp" value="boxplot" {% if clamping_mode=='boxplot' or not clamping_mode %}checked{% endif %} onchange="toggleManualClamping('dp', this.value)"> {{ texts['clamp_boxplot'] }}
+                </label>
+                <label style="margin-left:18px;">
+                    <input type="radio" name="clamping_mode_dp" value="manual" {% if clamping_mode=='manual' %}checked{% endif %} onchange="toggleManualClamping('dp', this.value)"> {{ texts['clamp_manual'] }}
+                </label>
+                <div id="clamping-options-manual-dp" style="display:none; margin-top:6px;">
+                    <label>{{ texts['clamp_min'] }} <input type="number" name="clamping_min" step="any" value="{{clamping_min if clamping_min is not none else ''}}"></label>
+                    <label style="margin-left:14px;">{{ texts['clamp_max'] }} <input type="number" name="clamping_max" step="any" value="{{clamping_max if clamping_max is not none else ''}}"></label>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" name="file_name" value="{{ file_name }}">
+        <input type="submit" value="{{ texts['anonimize'] }}">
+    </form>
+    {% endif %}
+    <div class="method-explanation-modal" id="method-explanation-modal" onclick="hideMethodExplanation()">
+        <div class="method-explanation-content" onclick="event.stopPropagation()">
+            <button onclick="hideMethodExplanation()" title="Close">&times;</button>
+            <h3 id="method-explanation-title"></h3>
+            <div id="method-explanation-text" style="margin-top:10px; line-height:1.5;"></div>
+        </div>
+    </div>
+    {% if output_table %}
+    <a id="output"></a>
+    <div class="centered-flex">
+        <div class="table-container">
+            <b>{{ texts['preview_anon'] }}:</b>
+            {{ output_table|safe }}
+        </div>
+        <div class="table-container">
+            <b>{{ texts['stats_anon'] }}:</b>
+            {% if output_describe %}
+                {{ output_describe|safe }}
+            {% endif %}
+        </div>
+    </div>
+    <div style="margin:0 auto; max-width:820px;">
+        <div style="display:flex; justify-content:center; margin-bottom:18px;">
+            <button type="button" class="plot-tab-btn" onclick="showPlot('orig')" id="tab-orig" style="border-radius:8px 0 0 8px; border-right:none;">{{ texts['plot_original'] }}</button>
+            <button type="button" class="plot-tab-btn" onclick="showPlot('anon')" id="tab-anon" style="border-radius:0;">{{ texts['plot_anon'] }}</button>
+            <button type="button" class="plot-tab-btn" onclick="showPlot('both')" id="tab-both" style="border-radius:0;">{{ texts['plot_both'] }}</button>
+            {% if plot_noise %}
+            <button type="button" class="plot-tab-btn" onclick="showPlot('noise')" id="tab-noise" style="border-radius:0 8px 8px 0;">{{ texts['plot_noise'] }}</button>
+            {% endif %}
+        </div>
+        <div id="plot-orig" class="plot-container" style="text-align:center;">
+            <img src="data:image/png;base64,{{ plot_orig }}" alt="Original" style="max-width:95vw; border-radius:8px; box-shadow:0 2px 18px #0002;">
+        </div>
+        <div id="plot-anon" class="plot-container" style="text-align:center; display:none;">
+            <img src="data:image/png;base64,{{ plot_anon }}" alt="Anonymized" style="max-width:95vw; border-radius:8px; box-shadow:0 2px 18px #0002;">
+        </div>
+        <div id="plot-both" class="plot-container" style="text-align:center; display:none;">
+            <img src="data:image/png;base64,{{ plot_both }}" alt="Original vs Anonymized" style="max-width:95vw; border-radius:8px; box-shadow:0 2px 18px #0002;">
+        </div>
+        {% if plot_noise %}
+        <div id="plot-noise" class="plot-container" style="text-align:center; display:none;">
+            <img src="data:image/png;base64,{{ plot_noise }}" alt="Noise" style="max-width:95vw; border-radius:8px; box-shadow:0 2px 18px #0002;">
+        </div>
+        {% endif %}
+    </div>
+    {% if rmse is not none and mae is not none and cv is not none %}
+    <div style="background:#fafff0; color:#222; border:1px solid #c0c060; border-radius:8px; padding:10px 18px; max-width:700px; margin:22px auto 0 auto; text-align:center; font-size:1.1em;">
+        <b>{{ texts['rmse_label'] }}</b> {{ '%.2f' % rmse }}<br>
+        <b>{{ texts['mae_label'] }}</b> {{ '%.2f' % mae }}<br>
+        <b>{{ texts['cv_label'] }}</b> {{ '%.2f' % cv }}
+    </div>
+    {% endif %}
+    {% if download_link %}
+        <a href="{{ download_link }}">{{ texts['download'] }}</a>
+    {% endif %}
+    {% endif %}
+</body>
+</html>
