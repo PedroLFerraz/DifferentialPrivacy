@@ -1,22 +1,14 @@
 <p align="center">
-  <img src="docs/icon.svg" width="96" alt="">
+  <img src="docs/social-preview.png" width="100%" alt="Differential privacy for household energy data. M.Sc. thesis, TU Darmstadt and Poli-USP. A chart of the error falling as the privacy budget epsilon grows, one curve per group size from 1 to 100.">
 </p>
 
-<h1 align="center">Differential Privacy for energy data</h1>
-
-<p align="center">
-  Privacy preservation models for the exchange of personal data in the heat sector.<br>
-  M.Sc. thesis at <b>TU Darmstadt</b>, also presented as my final-year project (TCC) at <b>Poli-USP</b>, 2025.
-</p>
+Privacy preservation models for the exchange of personal data in the heat sector: my M.Sc. thesis at
+**TU Darmstadt**, also presented as my final-year project (TCC) at **Poli-USP**, 2025.
 
 > **This repository is an archive.** It holds the code as it stood when the work was submitted.
 > The notebooks need the original gas-consumption data, which belongs to its provider and is not
 > published here, and the hosted demo is no longer online. The web app still runs locally — see
 > [below](#run-the-web-app).
-
-<p align="center">
-  <img src="docs/banner.jpg" width="720" alt="The project banner presented at Poli-USP: introduction, methodology and web application diagrams, the error-per-epsilon results chart, and the conclusion">
-</p>
 
 ## The question
 
@@ -41,6 +33,14 @@ real values:
   aggregating first reaches the same accuracy with a much smaller ε.
 - German rules set no maximum ε for energy data but require at least five aggregated values;
   Brazilian regulation has no specific guidance for energy data at all.
+
+The chart at the top is that trade-off recomputed on the synthetic sample in this repo: the error of
+Laplace-noised group means as ε grows, one curve per group size. The banner presented at Poli-USP
+shows the real one, on the Bensheim data:
+
+<p align="center">
+  <img src="docs/banner.jpg" width="720" alt="The project banner presented at Poli-USP: introduction, methodology and web application diagrams, the error-per-epsilon results chart, and the conclusion">
+</p>
 
 ## Run the web app
 
